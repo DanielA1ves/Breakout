@@ -1,7 +1,5 @@
-import WebFont from 'webfontloader';
-import config from '../config.js';
+import config from './config.js';
 import global from './global/index.js';
-import clone from 'lodash.clone';
 
 export default class Boot extends Phaser.Scene {
   constructor() {
@@ -11,14 +9,14 @@ export default class Boot extends Phaser.Scene {
 
   preload() {
     if (config.webfonts && config.webfonts.length) {
-      WebFont.load({
-        google: {
-          families: config.webfonts
-        },
+      window.WebFont.load({
+      google: {
+        families: config.webfonts
+      },
         active: () => {
-          this.fontsReady = true;
-        }
-      });
+        this.fontsReady = true;
+      }
+    });
     }
 
     this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'loading fonts', {
@@ -32,7 +30,7 @@ export default class Boot extends Phaser.Scene {
   }
 
   create() {
-    this.game.global = clone(global);
+    this.game.global = JSON.parse(JSON.stringify(global));
   }
 
   update() {
