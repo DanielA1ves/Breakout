@@ -22,7 +22,7 @@ export default class Boot extends Phaser.Scene {
   }
 
   create() {
-  this.game.global = JSON.parse(JSON.stringify(global));
-  this.scene.start('Game');
+    this.registry.set('global', JSON.parse(JSON.stringify(global)));
+    this.scene.start('Game');
   }
 }

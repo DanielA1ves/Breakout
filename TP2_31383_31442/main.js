@@ -1,12 +1,13 @@
 import Boot from './Boot.js';
 import Game from './Game.js';
+import GameOver from './GameOver.js';
 
 const config = {
   type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight,
   backgroundColor: '#000000',
-  scene: [Boot, Game]
+  scene: [Boot, Game, GameOver]
 };
 
 

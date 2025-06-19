@@ -9,13 +9,13 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-    this.game.global = global;
+    this.global = this.registry.get('global');
 
     const width = this.cameras.main.width;
 
-    this.createText(20, 10, `Score: ${this.game.global.score}`, 'left');
-    this.createText(width / 2, 10, `Lives: ${this.game.global.lives}`, 'center');
-    this.createText(width - 20, 10, `Level: ${this.game.global.level}`, 'right');
+    this.scoreText = this.createText(20, 10, `Score: ${this.global.score}`, 'left');
+    this.livesText = this.createText(width / 2, 10, `Lives: ${this.global.lives}`, 'center');
+    this.levelText = this.createText(width - 20, 10, `Level: ${this.global.level}`, 'right');
 
     this.bricks = this.physics.add.staticGroup();
     this.generateBricks(this.bricks);
@@ -27,13 +27,14 @@ export default class Game extends Phaser.Scene {
 
     this.physics.add.collider(this.ball, this.paddle, this.ballHitPaddle, null, this);
     this.physics.add.collider(this.ball, this.bricks, this.ballHitBrick, null, this);
+    this.physics.world.checkCollision.down = false;
   }
 
   releaseBall() {
   if (!this.ballOnPaddle) return;
 
     this.ballOnPaddle = false;
-    this.ball.setVelocity(400, -400);
+    this.ball.setVelocity(0, -400);
   }
 
 
@@ -46,6 +47,8 @@ export default class Game extends Phaser.Scene {
     if (align === 'center') txt.setOrigin(0.5, 0);
     else if (align === 'right') txt.setOrigin(1, 0);
     else txt.setOrigin(0, 0);
+
+    return txt;
   }
 
   setUpPaddle() {
@@ -121,6 +124,10 @@ export default class Game extends Phaser.Scene {
       this.ball.setX(this.paddle.x);
     }
 
+    if (!this.ballOnPaddle && this.ball.y > this.cameras.main.height) {
+      this.ballLost();
+    }
+
     this.physics.add.collider(
     this.ball,
     this.paddle,
@@ -154,9 +161,39 @@ ballHitPaddle(ball, paddle) {
   }
 
   ballHitBrick(ball, brick) {
-    console.log('🎯 COLIDIU COM BRICK!');
     brick.disableBody(true, true);
+
+    this.global.score += 10;
+    this.registry.set('global', this.global);
+    this.scoreText.setText(`Score: ${this.global.score}`);
+
+    const remaining = this.bricks.getChildren().filter(b => b.active).length;
+    if (remaining > 0) return;
+
+    this.global.level += 1;
+    this.levelText.setText(`Level: ${this.global.level}`);
+    this.registry.set('global', this.global);
+
+    this.putBallOnPaddle();
+    this.generateBricks(this.bricks);
   }
 
+  ballLost() {
+  this.global.lives -= 1;
+  this.livesText.setText(`Lives: ${this.global.lives}`);
+  this.registry.set('global', this.global);
+
+  if (this.global.lives === 0) {
+    this.endGame();
+    return;
+  }
+
+  this.ball.setVelocity(0);
+  this.putBallOnPaddle();
+}
+
+  endGame() {
+    this.scene.start('Gameover');
+  }
 
 }
