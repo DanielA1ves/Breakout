@@ -3,13 +3,10 @@ export default class Brick extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, textureKey);
 
     scene.add.existing(this);
-    scene.physics.add.existing(this);
+    scene.physics.add.existing(this, true);
 
     this.setImmovable(true);
     this.setOrigin(0.5);
 
-    if (tintHex) {
-      this.setTint(tintHex);
-    }
   }
 }

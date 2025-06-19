@@ -11,7 +11,10 @@ export default class Plataforma extends Phaser.Physics.Arcade.Sprite {
   }
 
   update() {
-  this.x = this.scene.input.x;
+
+  if (this.scene.input.activePointer.x === 0) return;
+
+  this.x = this.scene.input.activePointer.x;
 
   if (this.x < this.displayWidth / 2) {
     this.x = this.displayWidth / 2;
@@ -23,6 +26,7 @@ export default class Plataforma extends Phaser.Physics.Arcade.Sprite {
     this.x = maxRight;
     return;
   }
-}
+  }
+
 
 }
