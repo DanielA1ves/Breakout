@@ -7,7 +7,7 @@ export default class Plataforma extends Phaser.Physics.Arcade.Sprite {
 
     this.setImmovable(true);
     this.setOrigin(0.5, 0.5);
-    this.setScale(0.28);
+    this.setScale(0.25);
   }
 
   update() {
