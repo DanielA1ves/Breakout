@@ -1,7 +1,7 @@
 import global from './global/index.js';
 import Brick from './objetos/brick.js';
 import Plataforma from './objetos/plataforma.js';
-import Paddle from './objetos/plataforma.js';
+import Ball from './objetos/bola.js';
 
 export default class Game extends Phaser.Scene {
   constructor() {
@@ -21,12 +21,21 @@ export default class Game extends Phaser.Scene {
     this.generateBricks(this.bricks);
 
     this.setUpPaddle();
+    this.setUpBall();
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.input.on('pointerdown', this.releaseBall, this);
+
+    this.physics.add.collider(this.ball, this.paddle, this.ballHitPaddle, null, this);
+    this.physics.add.collider(this.ball, this.bricks, this.ballHitBrick, null, this);
   }
 
-  update() {
-    this.paddle.update(this.cursors);
+  releaseBall() {
+  if (!this.ballOnPaddle) return;
+
+    this.ballOnPaddle = false;
+    this.ball.setVelocity(400, -400);
   }
+
 
   createText(x, y, text, align = 'left') {
     const txt = this.add.text(x, y, text, {
@@ -52,39 +61,102 @@ export default class Game extends Phaser.Scene {
     const startY = this.cameras.main.height - 130;
 
     this.ball = new Ball(this, startX, startY);
-    this.ball.setVelocity(150, -150);
+    this.ball.setScale(0.07);
+    this.putBallOnPaddle();
   }
+
+
+  putBallOnPaddle() {
+    this.ballOnPaddle = true;
+
+    this.ball.setVelocity(0);
+    this.ball.setPosition(
+    this.paddle.x,
+    this.paddle.y - this.paddle.displayHeight / 2 - this.ball.displayHeight / 2
+  );
+  }
+
 
   generateBricks(group) {
-    const rows = 5;
-    const columns = 12;
-    const xOffset = 1;
-    const topMargin = 80;
-    const brickSpacingX = -125;
-    const brickSpacingY = 85;
-    const brickTextures = [
-      'brick_vermelho',
-      'brick_laranja',
-      'brick_amarelo',
-      'brick_verde',
-      'brick_roxo',
-    ];
+  const rows = 5;
+  const columns = 10;
+  const brickSpacingY = 80;
+  const topMargin = 80;
+  const scale = 0.22;
 
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < columns; x++) {
-        const brickX = xOffset + x * brickSpacingX;
-        const brickY = topMargin + y * brickSpacingY;
+  const tempBrick = this.add.image(0, 0, 'brick_vermelho').setScale(scale);
+  const brickWidth = tempBrick.displayWidth;
+  tempBrick.destroy();
 
-        const textureKey = brickTextures[y % brickTextures.length];
-        const newBrick = new Brick(this, brickX, brickY, textureKey);
-        newBrick.setScale(0.22);
-        group.add(newBrick);
-      }
+  const brickSpacingX = brickWidth + 70;
+  const totalWidth = (columns - 1) * brickSpacingX;
+  const startX = this.cameras.main.centerX - totalWidth / 2;
+
+  const brickTextures = [
+    'brick_vermelho',
+    'brick_laranja',
+    'brick_amarelo',
+    'brick_verde',
+    'brick_roxo',
+  ];
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < columns; x++) {
+      const brickX = startX + x * brickSpacingX;
+      const brickY = topMargin + y * brickSpacingY;
+
+      const textureKey = brickTextures[y % brickTextures.length];
+      const newBrick = new Brick(this, brickX, brickY, textureKey);
+      newBrick.setScale(scale);
+      newBrick.refreshBody();
+      group.add(newBrick);
+    }
+  }
+}
+
+  update() {
+    this.paddle.update(this.cursors);
+
+    if (this.ballOnPaddle) {
+      this.ball.setX(this.paddle.x);
     }
 
-    const totalWidth = columns * brickSpacingX;
-  group.children.iterate(child => {
-    child.x += (this.cameras.main.width / 2 - totalWidth / 2);
-  });
+    this.physics.add.collider(
+    this.ball,
+    this.paddle,
+    this.ballHitPaddle,
+    null,
+    this
+  );
+
+  this.physics.add.collider(
+    this.ball,
+    this.bricks,
+    this.ballHitBrick,
+    null,
+    this
+  );
+
+}
+
+ballHitPaddle(ball, paddle) {
+  let diff = 0;
+
+    if (ball.x < paddle.x) {
+      diff = paddle.x - ball.x;
+      ball.setVelocityX(-10 * diff);
+    } else if (ball.x > paddle.x) {
+      diff = ball.x - paddle.x;
+      ball.setVelocityX(10 * diff);
+    } else {
+      ball.setVelocityX(2 + Math.random() * 8);
+    }
   }
+
+  ballHitBrick(ball, brick) {
+    console.log('🎯 COLIDIU COM BRICK!');
+    brick.disableBody(true, true);
+  }
+
+
 }
