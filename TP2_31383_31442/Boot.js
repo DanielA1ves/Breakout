@@ -19,10 +19,11 @@ export default class Boot extends Phaser.Scene {
     this.load.image('brick_vermelho', './imagens/brick_vermelho.png');
     this.load.image('plataforma', './imagens/plataforma.png');
     this.load.image('bola', './imagens/bola.png');
+    this.load.image('menu', './imagens/Menu.png');
   }
 
   create() {
     this.registry.set('global', JSON.parse(JSON.stringify(global)));
-    this.scene.start('Game');
+    this.scene.start('Menu');
   }
 }

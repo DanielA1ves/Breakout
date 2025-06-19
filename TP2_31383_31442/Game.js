@@ -161,22 +161,27 @@ ballHitPaddle(ball, paddle) {
   }
 
   ballHitBrick(ball, brick) {
-    brick.disableBody(true, true);
+  brick.disableBody(true, true);
 
-    this.global.score += 10;
-    this.registry.set('global', this.global);
-    this.scoreText.setText(`Score: ${this.global.score}`);
+  this.global.score += 10;
+  this.registry.set('global', this.global);
+  this.scoreText.setText(`Score: ${this.global.score}`);
 
-    const remaining = this.bricks.getChildren().filter(b => b.active).length;
-    if (remaining > 0) return;
+  const remaining = this.bricks.getChildren().filter(b => b.active).length;
+  if (remaining > 0) return;
 
-    this.global.level += 1;
-    this.levelText.setText(`Level: ${this.global.level}`);
-    this.registry.set('global', this.global);
+  this.global.level += 1;
+  this.levelText.setText(`Level: ${this.global.level}`);
+  this.registry.set('global', this.global);
 
-    this.putBallOnPaddle();
-    this.generateBricks(this.bricks);
+  if (this.global.level === 2) {
+    this.paddle.setScale(0.15);
+    this.paddle.refreshBody();
   }
+
+  this.putBallOnPaddle();
+  this.generateBricks(this.bricks);
+}
 
   ballLost() {
   this.global.lives -= 1;
